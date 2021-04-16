@@ -1,8 +1,9 @@
 # Command Engine
 A simple engine to create your own command-line interpreter. <br>
 Still needs a little tweaking and rewriting some functions.
-- No dependencies
-- Commands as structures
+- No dependencies *(only sync)*
+- Commands as user-defined structures *(only sync)*
+- Asynchronous commands
 - Case sensitive commands
 - Positional arguments
 - Optional non-positional arguments
@@ -77,6 +78,41 @@ fn main() {
     // Executing the instruction
     let out = engine.execute(&raw);
     
+    println!("StatusCode: '{}'\n{}", out.result, out.message)
+}
+```
+
+# Async Example
+```rust
+use reqwest;
+use command_engine::asynchronous::{ax::AsyncCommand, AsyncEngine};
+use command_engine::{Output, Instruction};
+
+
+async fn main() {
+    // Creating a command object
+    let command_get_ip = AsyncCommand::new(
+      "wanip",
+      Some("Gets WAN IP of the current machine.\n\n"),
+      Box::new(|_: &Instruction| { Box::pin(async move {
+          return if let Ok(response) = reqwest::get("https://api.ipify.org/?format=txt").await {
+              Output::new_ok(6, Some(response.text().await.unwrap()))
+          } else {
+              Output::new_error(6, Some(String::from("Couldn't get the result from ipify.")))
+          }
+      }) })
+    );
+
+    // Raw instruction in String 
+    let raw = String::from("wanip");
+
+   // Creating the CommandEngine object
+    let mut engine = AsyncEngine::new()
+        .add(command_get_ip);
+
+    // Executing the instruction
+    let out = engine.execute(&raw).await;
+
     println!("StatusCode: '{}'\n{}", out.result, out.message)
 }
 ```

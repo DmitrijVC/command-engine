@@ -4,6 +4,9 @@
     Any pull requests colliding with the core program will be denied.
 */
 
+#[cfg(feature = "async")]
+pub mod asynchronous;
+
 mod instruction;
 mod output;
 mod ax;
