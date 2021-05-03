@@ -1,19 +1,19 @@
 pub mod ax;
 
+pub use async_trait::async_trait;
+pub use ax::*;
 use super::{Output, Instruction};
 use std::collections::HashMap;
 
-type CommandObj<'a> = ax::AsyncCommand<'a>;
 
-
-pub struct AsyncEngine<'a> {
-    commands: HashMap<String, CommandObj<'a>>
+pub struct AsyncEngine {
+    commands: HashMap<String, Box<dyn AsyncCommand>>
 }
 
-impl<'a> AsyncEngine<'a> {
+impl AsyncEngine {
     pub fn new() -> Self {
         Self {
-            commands: HashMap::<String, CommandObj<'a>>::new()
+            commands: HashMap::<String, Box<dyn AsyncCommand>>::new()
         }
     }
 
@@ -30,29 +30,30 @@ impl<'a> AsyncEngine<'a> {
 
         if let Some(arg0) = instruction.args.get(0) {
             if arg0.eq("help") {
-                let help = if let Some(help) = command.help {
-                    help
-                } else {
-                    "Help is not implemend for this command!"
-                };
-
-                return Output::new_ok(1, Some(String::from(help)));
+                return Output::new_ok(1, Some(String::from(command.on_help())));
             }
         }
 
         command.on_execute(&instruction).await
     }
 
-    pub fn add(mut self, command_struct: CommandObj<'a>) -> Self {
-        let name = format!("{}", command_struct.name);
-        if let None = self.get_command_mut(&name) {
-            self.commands.insert(name, command_struct);
+    pub fn add(mut self, command_struct: Box<dyn AsyncCommand>) -> Self {
+        let name = format!("{}", command_struct.name());
+        if let None = self.get_command(&name) {
+            self.commands.insert(command_struct.name().to_string(), command_struct);
         }
 
         self
     }
 
-    fn get_command_mut(&mut self, name: &String) -> Option<&mut CommandObj<'a>> {
+    fn get_command(&self, name: &String) -> Option<&Box<dyn AsyncCommand>> {
+        match self.commands.get(name) {
+            None => None,
+            Some(command) => Some(command),
+        }
+    }
+
+    fn get_command_mut(&mut self, name: &String) -> Option<&mut Box<dyn AsyncCommand>> {
         match self.commands.get_mut(name) {
             None => None,
             Some(command) => Some(command),

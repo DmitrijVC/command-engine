@@ -7,6 +7,9 @@
 #[cfg(feature = "async")]
 pub mod asynchronous;
 
+#[cfg(feature = "async")]
+#[macro_use] extern crate async_trait;
+
 mod instruction;
 mod output;
 mod ax;
@@ -19,11 +22,11 @@ use std::result::Result as StdResult;
 use std::fmt::Result as FmtResult;
 
 
-pub struct CommandEngine {
+pub struct Engine {
     commands: HashMap<String, Box<dyn Command>>
 }
 
-impl CommandEngine {
+impl Engine {
     pub fn new() -> Self {
         Self {
             commands: HashMap::<String, Box<dyn Command>>::new()

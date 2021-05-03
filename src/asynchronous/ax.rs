@@ -1,25 +1,14 @@
 use crate::{Instruction, Output};
-use futures::future::BoxFuture;
+use async_trait;
 
 
-pub type AsyncOnExecute<'b> = Box<dyn for<'a> FnMut(&Instruction) -> BoxFuture<'b, Output>>;
+#[async_trait]
+pub trait AsyncCommand: Send + Sync {
+    fn name(&self) -> &str;
 
-pub struct AsyncCommand<'b> {
-    pub name: &'b str,
-    pub help: Option<&'b str>,
-    pub execute_fun: AsyncOnExecute<'b>,
-}
-
-impl<'b> AsyncCommand<'b> {
-    pub fn new(name: &'b str, help: Option<&'b str>, execute_fun: AsyncOnExecute<'b>) -> Self {
-        Self {
-            name,
-            help,
-            execute_fun
-        }
+    fn on_help(&self) -> &str {
+        "Help is not implemend for this command!"
     }
 
-    pub async fn on_execute(&mut self, ins: &Instruction) -> Output {
-        (self.execute_fun)(ins).await
-    }
+    async fn on_execute(&mut self, ins: &Instruction) -> Output;
 }
