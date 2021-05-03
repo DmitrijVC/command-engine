@@ -16,6 +16,7 @@ mod ax;
 
 pub use instruction::*;
 pub use output::Output;
+pub use output::Result;
 pub use ax::*;
 use std::collections::HashMap;
 use std::result::Result as StdResult;
