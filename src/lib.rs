@@ -13,11 +13,13 @@ pub mod asynchronous;
 mod instruction;
 mod output;
 mod ax;
+mod macros;
 
 pub use instruction::*;
 pub use output::Output;
 pub use output::Result;
 pub use ax::*;
+pub use macros::*;
 use std::collections::HashMap;
 use std::result::Result as StdResult;
 use std::fmt::Result as FmtResult;

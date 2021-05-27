@@ -1,7 +1,9 @@
+mod macros;
 pub mod ax;
 
 pub use async_trait::async_trait;
 pub use ax::*;
+pub use macros::*;
 use super::{Output, Instruction};
 use std::collections::HashMap;
 
@@ -60,3 +62,6 @@ impl AsyncEngine {
         }
     }
 }
+
+unsafe impl Send for AsyncEngine {}
+unsafe impl Sync for AsyncEngine {}
