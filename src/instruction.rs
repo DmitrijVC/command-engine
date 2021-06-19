@@ -2,7 +2,7 @@ use super::*;
 use std::fmt::{Formatter, Display};
 
 
-// ToDo: Rewrite needed
+#[doc(hidden)]
 fn parser(raw: &str) -> Vec<String> {
     let mut commands = Vec::<String>::new();
 
@@ -55,6 +55,9 @@ fn parser(raw: &str) -> Vec<String> {
 }
 
 
+/// Instruction wrapper for Command name, arguments and optional arguments.
+/// Created from string.
+/// Used by the synchronous and asynchronous Engine.
 #[derive(Default, Debug)]
 pub struct Instruction {
     pub value: String,
@@ -63,7 +66,11 @@ pub struct Instruction {
 }
 
 impl Instruction {
-    // ToDo: Rewrite needed
+    /// Creates an Instruction object from provided string
+    ///
+    /// # Arguments
+    ///
+    /// * `raw` - A string data with the command name and arguments
     pub fn new(raw: &str) -> StdResult<Self, Output> {
         let commands = parser(raw);
 
@@ -114,6 +121,13 @@ impl Instruction {
     }
 }
 
+/// Display trait implementation for Instruction struct showing all the attributes.
+///
+/// * Command name
+///
+/// * Command arguments
+///
+/// * Command optional arguments
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(

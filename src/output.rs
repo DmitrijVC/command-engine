@@ -6,24 +6,25 @@ const RESULT_DEF_OK: u16 = 0xA000;
 const RESULT_DEF_ERROR: u16 = 0xF000;
 
 
-/// `Result` enum is a part of a `Output` structure.
+/// Enum that is a part of an Output structure.
 ///
 /// **Ok** and **Error** contain integer representing some status code.
 /// Each should be documented in the command help.
 ///
-/// Restricted prime values for **Ok** and **Error** are from `0 to 5`,
-/// But can be overwritten.
+/// Restricted prime values:
+/// * `Error(0)` - Engine failure
+/// * `Ok(0)` - Help returned
+///
+/// Restricted values shouldn't be used in a custom commands,
+/// but returning an Output with restricted prime value won't panic
 ///
 /// If everything was completed successfully without any info,
-/// **Ok** should contain prime value `6`, so
-/// the status code would be `0xA006`.
+/// **Ok** should contain prime value `1`, so
+/// the status code would be `0xA001`.
 ///
 /// If something has failed without any info,
-/// **Error** should contain prime value `6`, so
-/// the status code would be `0xF006`.
-///
-/// 0xF000 - Invalid instruction
-/// 0xF001 - Unknown command
+/// **Error** should contain prime value `1`, so
+/// the status code would be `0xF001`.
 pub enum Result {
     Ok(u16),
     Error(u16),
@@ -39,6 +40,8 @@ impl Result {
     }
 
     /// Indicate Successful result status code by a prime value
+    ///
+    /// Panics when `prime_val` is over `4095`
     pub fn ok(prime_val: u16) -> Self {
         Self::Ok(Self::parse_status_code(
             "Ok",
@@ -48,6 +51,8 @@ impl Result {
     }
 
     /// Indicate Failed result status code by a prime value
+    ///
+    /// Panics when `prime_val` is over `4095`
     pub fn err(prime_val: u16) -> Self {
         Self::Ok(Self::parse_status_code(
             "Error",
@@ -86,13 +91,19 @@ impl Display for Result {
 }
 
 
-/// Undocumented
+/// Wrapper for the Command's output
 pub struct Output {
     pub result: Result,
     pub message: String,
 }
 
 impl Output {
+    /// Creates new Output object
+    ///
+    /// # Arguments
+    ///
+    /// * `result` - Enum defining if the output was successful or not
+    /// * `msg` - Message, can be None
     fn new(result: Result, msg: Option<String>) -> Self{
         let message = match msg {
             None => "".to_string(),
@@ -105,6 +116,12 @@ impl Output {
         }
     }
 
+    /// Returns a successful Output with a certain value and message
+    ///
+    /// # Arguments
+    ///
+    /// * `prime_val` - Value output identifier. Can't be over 4095 or it will panic
+    /// * `msg` - Message, can be None
     pub fn new_ok(prime_val: u16, msg: Option<String>) -> Self {
         Self::new(
             Result::ok(prime_val),
@@ -112,6 +129,12 @@ impl Output {
         )
     }
 
+    /// Returns a failed Output with a certain value and message
+    ///
+    /// # Arguments
+    ///
+    /// * `prime_val` - Value output identifier. Can't be over 4095 or it will panic
+    /// * `msg` - Message, can be None
     pub fn new_error(prime_val: u16, msg: Option<String>) -> Self {
         Self::new(
             Result::err(prime_val),

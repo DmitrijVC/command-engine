@@ -1,41 +1,119 @@
-/*
-    This library is a part of a private project, and is specially designed for it.
-    I do not guarantee the full functionality of this library in your project.
-    Any pull requests colliding with the core program will be denied.
-*/
-
+// Feature to create asynchronous commends
 #[cfg(feature = "async")]
 pub mod asynchronous;
 
+// Allows to create an asynchronous traits
 #[cfg(feature = "async")]
 #[macro_use] extern crate async_trait;
 
+// Conversion tools from raw string into an Instruction object
 mod instruction;
+
+// Functionality of the Commands' output
 mod output;
+
+// The Command trait
 mod ax;
+
+// Macros for synchronous Engine
 mod macros;
 
+// Std functionality with aliasing
+use std::collections::HashMap;
+use std::result::Result as StdResult;
+use std::fmt::Result as FmtResult;
+
+// Public module declarations and re-exports
 pub use instruction::*;
 pub use output::Output;
 pub use output::Result;
 pub use ax::*;
 pub use macros::*;
-use std::collections::HashMap;
-use std::result::Result as StdResult;
-use std::fmt::Result as FmtResult;
 
 
-pub struct Engine {
-    commands: HashMap<String, Box<dyn Command>>
+/// Synchronous Command Engine
+pub struct Engine<'a> {
+    commands: HashMap<String, Box<dyn Command + 'a>>,
 }
 
-impl Engine {
+impl<'a> Engine<'a> {
+    /// Creates an empty Engine
     pub fn new() -> Self {
         Self {
-            commands: HashMap::<String, Box<dyn Command>>::new()
+            commands: HashMap::<String, Box<dyn Command  + 'a>>::new(),
         }
     }
 
+    /// Adds a new Command to the Engine and returns itself
+    ///
+    /// # Arguments
+    ///
+    /// * `command_struct` - A struct with Command trait implementation
+    ///
+    /// # Example
+    /// ```
+    /// use command_engine::*;
+    ///
+    /// struct MyCommand;
+    ///
+    /// impl Command for MyCommand {
+    ///     (...)
+    /// }
+    ///
+    /// let mut engine = Engine::new()
+    ///   .add(MyCommand{});
+    /// ```
+    pub fn add<C: Command + 'a>(mut self, command_struct: C) -> Self {
+        let name = format!("{}", command_struct.name());
+        if let None = self.get_command(&name) {
+            self.commands.insert(command_struct.name().to_string(), Box::new(command_struct));
+        }
+
+        self
+    }
+
+    /// Adds a new Command to the Engine
+    ///
+    /// # Arguments
+    ///
+    /// * `command_struct` - A struct with Command trait implementation
+    ///
+    /// # Example
+    /// ```
+    /// use command_engine::*;
+    ///
+    /// struct MyCommand;
+    ///
+    /// impl Command for MyCommand {
+    ///     (...)
+    /// }
+    ///
+    /// let mut engine = Engine::new();
+    /// engine.add_separated(MyCommand{});
+    /// ```
+    pub fn add_separated<C: Command + 'a>(&mut self, command_struct: C) {
+        let name = format!("{}", command_struct.name());
+        if let None = self.get_command(&name) {
+            self.commands.insert(command_struct.name().to_string(), Box::new(command_struct));
+        }
+    }
+
+    /// Gets a raw string, tries to convert it into an Instruction and tries to execute the Command based on provided data
+    ///
+    /// # Arguments
+    ///
+    /// * `raw_instruction` - A string data with the command name and arguments
+    ///
+    /// # Example
+    /// ```
+    /// let raw = String::from("mycommand arg1 -o optional");
+    ///
+    /// let mut engine =
+    /// (...)
+    ///
+    /// let output = engine.execute(&raw);
+    /// println!("StatusCode: '{}'\n{}", output.result, output.message);
+    /// ```
     pub fn execute(&mut self, raw_instruction: &String) -> Output {
         let instruction = match Instruction::new(raw_instruction) {
             Ok(instruction) => instruction,
@@ -43,36 +121,29 @@ impl Engine {
         };
 
         let command = match self.get_command_mut(&instruction.value) {
-            None => return Output::new_error(1, Some(String::from("Invalid command!"))),
+            None => return Output::new_error(0, Some(String::from("Invalid command!"))),
             Some(command) => command,
         };
 
         if let Some(arg0) = instruction.args.get(0) {
             if arg0.eq("help") {
-                return Output::new_ok(1, Some(String::from(command.on_help())));
+                return Output::new_ok(0, Some(String::from(command.on_help())));
             }
         }
 
         command.on_execute(&instruction)
     }
 
-    pub fn add(mut self, command_struct: Box<dyn Command>) -> Self {
-        let name = format!("{}", command_struct.name());
-        if let None = self.get_command(&name) {
-            self.commands.insert(command_struct.name().to_string(), command_struct);
-        }
-
-        self
-    }
-
-    fn get_command(&self, name: &String) -> Option<&Box<dyn Command>> {
+    #[doc(hidden)]
+    fn get_command(&self, name: &String) -> Option<&Box<dyn Command + 'a>> {
         match self.commands.get(name) {
             None => None,
             Some(command) => Some(command),
         }
     }
 
-    fn get_command_mut(&mut self, name: &String) -> Option<&mut Box<dyn Command>> {
+    #[doc(hidden)]
+    fn get_command_mut(&mut self, name: &String) -> Option<&mut Box<dyn Command + 'a>> {
         match self.commands.get_mut(name) {
             None => None,
             Some(command) => Some(command),
