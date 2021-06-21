@@ -114,7 +114,7 @@ impl<'a> Engine<'a> {
     /// let output = engine.execute(&raw);
     /// println!("StatusCode: '{}'\n{}", output.result, output.message);
     /// ```
-    pub fn execute(&mut self, raw_instruction: &String) -> Output {
+    pub fn execute<S: AsRef<str>>(&mut self, raw_instruction: S) -> Output {
         let instruction = match Instruction::new(raw_instruction) {
             Ok(instruction) => instruction,
             Err(output) => return output,

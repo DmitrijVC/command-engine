@@ -3,7 +3,8 @@ use std::fmt::{Formatter, Display};
 
 
 #[doc(hidden)]
-fn parser(raw: &str) -> Vec<String> {
+fn parser<S: AsRef<str>>(s: S) -> Vec<String> {
+    let raw = s.as_ref();
     let mut commands = Vec::<String>::new();
 
     let mut fake_split = false;
@@ -71,7 +72,8 @@ impl Instruction {
     /// # Arguments
     ///
     /// * `raw` - A string data with the command name and arguments
-    pub fn new(raw: &str) -> StdResult<Self, Output> {
+    pub fn new<S: AsRef<str>>(s: S) -> StdResult<Self, Output> {
+        let raw = s.as_ref();
         let commands = parser(raw);
 
         if commands.is_empty() {

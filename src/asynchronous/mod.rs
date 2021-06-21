@@ -100,7 +100,7 @@ impl<'a> AsyncEngine<'a> {
     /// let output = engine.execute(&raw).await;
     /// println!("StatusCode: '{}'\n{}", output.result, output.message);
     /// ```
-    pub async fn execute(&mut self, raw_instruction: &String) -> Output {
+    pub async fn execute<S: AsRef<str>>(&mut self, raw_instruction: S) -> Output {
         let instruction = match Instruction::new(raw_instruction) {
             Ok(instruction) => instruction,
             Err(output) => return output,

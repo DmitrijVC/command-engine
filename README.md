@@ -1,4 +1,4 @@
-# Command Engine [v3.0.0]
+# Command Engine [v3.0.1]
 An engine to create your own command-line interpreter. <br>
 - No dependencies *(only sync)*
 - Commands as user-defined structures
@@ -10,6 +10,8 @@ An engine to create your own command-line interpreter. <br>
 
 # Example
 ```rust
+use command_engine::*;
+
 struct MyCommand;
 
 impl Command for MyCommand {
@@ -33,9 +35,13 @@ fn main() {
 
 # Async Example
 ```rust
+use command_engine::*;
+use command_engine::asynchronous::*;
+
 struct MyAsyncCommand;
 
-impl Command for MyAsyncCommand {
+#[async_trait]
+impl AsyncCommand for MyAsyncCommand {
     (...)
 }
 

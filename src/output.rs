@@ -104,10 +104,10 @@ impl Output {
     ///
     /// * `result` - Enum defining if the output was successful or not
     /// * `msg` - Message, can be None
-    fn new(result: Result, msg: Option<String>) -> Self{
+    fn new<S: ToString>(result: Result, msg: Option<S>) -> Self{
         let message = match msg {
             None => "".to_string(),
-            Some(message) => message,
+            Some(message) => message.to_string(),
         };
 
         Self {
@@ -122,7 +122,7 @@ impl Output {
     ///
     /// * `prime_val` - Value output identifier. Can't be over 4095 or it will panic
     /// * `msg` - Message, can be None
-    pub fn new_ok(prime_val: u16, msg: Option<String>) -> Self {
+    pub fn new_ok<S: ToString>(prime_val: u16, msg: Option<S>) -> Self {
         Self::new(
             Result::ok(prime_val),
             msg,
@@ -135,7 +135,7 @@ impl Output {
     ///
     /// * `prime_val` - Value output identifier. Can't be over 4095 or it will panic
     /// * `msg` - Message, can be None
-    pub fn new_error(prime_val: u16, msg: Option<String>) -> Self {
+    pub fn new_error<S: ToString>(prime_val: u16, msg: Option<S>) -> Self {
         Self::new(
             Result::err(prime_val),
             msg,
