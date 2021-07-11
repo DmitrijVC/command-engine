@@ -1,4 +1,6 @@
-# Command Engine [v3.0.1]
+# Command Engine [v3.0.1] Depreceated
+> Command Engine will be continued [here](https://github.com/VulcoLibs/command-engine)
+
 An engine to create your own command-line interpreter. <br>
 - No dependencies *(only sync)*
 - Commands as user-defined structures
